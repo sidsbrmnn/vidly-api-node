@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -15,6 +16,9 @@ mongoose
     .then(() => {
         console.log('Connected to MongoDB');
     });
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/api/genres', require('./routes/genres'));
 
