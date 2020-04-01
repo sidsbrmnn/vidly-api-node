@@ -25,6 +25,7 @@ router.put('/:id', async (req, res) => {
     ).exec();
     if (!genre) {
         res.status(404).send({ error: 'No such document found' });
+        return;
     }
 
     res.send({ data: genre._id });
@@ -34,6 +35,7 @@ router.delete('/:id', async (req, res) => {
     const genre = await Genre.findOneAndDelete({ _id: req.params.id }).exec();
     if (!genre) {
         res.status(404).send({ error: 'No such document found' });
+        return;
     }
 
     res.send({ data: 'Document deleted successfully' });
@@ -43,6 +45,7 @@ router.get('/:id', async (req, res) => {
     const genre = await Genre.findOne({ _id: req.params.id }).exec();
     if (!genre) {
         res.status(404).send({ error: 'No such document found' });
+        return;
     }
 
     res.send({ data: genre });
