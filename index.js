@@ -22,6 +22,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/api/genres', require('./routes/genres'));
 app.use('/api/movies', require('./routes/movies'));
+app.use('/api/users', require('./routes/users'));
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 app.listen(PORT, () => {
