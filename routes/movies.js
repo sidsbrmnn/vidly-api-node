@@ -6,6 +6,8 @@ const auth = require('../middlewares/auth');
 const Genre = require('../models/genre');
 const Movie = require('../models/movie');
 
+const ClientError = require('../util/error').ClientError;
+
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -17,8 +19,7 @@ router.get('/', async (req, res) => {
 router.post('/', [auth, admin], async (req, res) => {
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
-        res.status(400).send({ error: 'Invalid genre' });
-        return;
+        throw new ClientError(400, 'Invalid genre');
     }
 
     const movie = new Movie({
@@ -35,8 +36,7 @@ router.post('/', [auth, admin], async (req, res) => {
 router.put('/:id', [auth, admin], async (req, res) => {
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
-        res.status(400).send({ error: 'Invalid genre' });
-        return;
+        throw new ClientError(400, 'Invalid genre');
     }
 
     const movie = await Movie.findOneAndUpdate(
@@ -56,11 +56,10 @@ router.put('/:id', [auth, admin], async (req, res) => {
 router.delete('/:id', [auth, admin], async (req, res) => {
     const movie = await Movie.findOneAndDelete({ _id: req.params.id }).exec();
     if (!movie) {
-        res.status(404).send({ error: 'No such document found' });
-        return;
+        throw new ClientError(410, 'Movie does not exist');
     }
 
-    res.send({ data: 'Document deleted successfully' });
+    res.send({ data: 'Movie deleted successfully' });
 });
 
 router.get('/:id', async (req, res) => {
@@ -68,8 +67,7 @@ router.get('/:id', async (req, res) => {
         .populate('genre')
         .exec();
     if (!movie) {
-        res.status(404).send({ error: 'No such document found' });
-        return;
+        throw new ClientError(404, 'Movie not found');
     }
 
     res.send({ data: movie });

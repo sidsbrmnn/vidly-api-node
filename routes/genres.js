@@ -5,6 +5,8 @@ const auth = require('../middlewares/auth');
 
 const Genre = require('../models/genre');
 
+const ClientError = require('../util/error').ClientError;
+
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -27,8 +29,7 @@ router.put('/:id', [auth, admin], async (req, res) => {
         { new: true }
     ).exec();
     if (!genre) {
-        res.status(404).send({ error: 'No such document found' });
-        return;
+        throw new ClientError(404, 'Genre not found');
     }
 
     res.send({ data: genre._id });
@@ -37,18 +38,16 @@ router.put('/:id', [auth, admin], async (req, res) => {
 router.delete('/:id', [auth, admin], async (req, res) => {
     const genre = await Genre.findOneAndDelete({ _id: req.params.id }).exec();
     if (!genre) {
-        res.status(404).send({ error: 'No such document found' });
-        return;
+        throw new ClientError(410, 'Genre does not exist');
     }
 
-    res.send({ data: 'Document deleted successfully' });
+    res.send({ data: 'Genre deleted successfully' });
 });
 
 router.get('/:id', async (req, res) => {
     const genre = await Genre.findOne({ _id: req.params.id }).exec();
     if (!genre) {
-        res.status(404).send({ error: 'No such document found' });
-        return;
+        throw new ClientError(404, 'Genre not found');
     }
 
     res.send({ data: genre });

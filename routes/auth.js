@@ -4,18 +4,18 @@ const auth = require('../middlewares/auth');
 
 const User = require('../models/user');
 
+const ClientError = require('../util/error').ClientError;
+
 const router = express.Router();
 
 router.post('/', async (req, res) => {
     const user = await User.findOne({ email: req.body.email }).exec();
     if (!user) {
-        res.status(401).send({ error: 'Invalid email. Please register' });
-        return;
+        throw new ClientError(401, 'Invalid email. Please register');
     }
 
     if (!user.checkPassword(req.body.password)) {
-        res.status(401).send({ error: 'Invalid password' });
-        return;
+        throw new ClientError(401, 'Invalid password');
     }
 
     const token = user.generateAuthToken();
@@ -27,8 +27,7 @@ router.get('/me', auth, async (req, res) => {
         .select('-password')
         .exec();
     if (!user) {
-        res.status(410).send({ error: 'User does not exist' });
-        return;
+        throw new ClientError(410, 'User does not exist');
     }
 
     res.send({ data: user });
