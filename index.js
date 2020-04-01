@@ -2,6 +2,8 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 
+require('./services/error');
+
 const app = express();
 
 const MONGODB_URI =
