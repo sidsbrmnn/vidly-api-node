@@ -1,0 +1,24 @@
+{
+  "name": "vidly-api-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sidsbrmnn/vidly-api-node.git"
+  },
+  "keywords": [],
+  "author": "Siddharth Subramanian <sidsbrmnn@gmail.com> (https://sidsbrmnn.github.io/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sidsbrmnn/vidly-api-node/issues"
+  },
+  "homepage": "https://github.com/sidsbrmnn/vidly-api-node#readme"
+}
