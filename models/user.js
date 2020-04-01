@@ -47,7 +47,7 @@ function validateUser(user) {
             .password(),
         password: Joi.string().required(),
         isAdmin: Joi.boolean(),
-    });
+    }).options({ stripUnknown: true });
 
     return schema.validate(user);
 }

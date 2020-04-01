@@ -17,26 +17,26 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [auth, admin], async (req, res) => {
-    const { error } = validateGenre(req.body);
+    const { error, value } = validateGenre(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
     }
 
-    const genre = new Genre({ name: req.body.name });
+    const genre = new Genre({ ...value });
     await genre.save();
 
     res.send({ data: genre._id });
 });
 
 router.put('/:id', [auth, admin, objectId], async (req, res) => {
-    const { error } = validateGenre(req.body);
+    const { error, value } = validateGenre(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
     }
 
     const genre = await Genre.findOneAndUpdate(
         { _id: req.params.id },
-        { name: req.body.name },
+        { ...value },
         { new: true }
     ).exec();
     if (!genre) {

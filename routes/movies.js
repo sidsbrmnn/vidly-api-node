@@ -18,46 +18,36 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [auth, admin], async (req, res) => {
-    const { error } = validateMovie(req.body);
+    const { error, value } = validateMovie(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
     }
 
-    const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
+    const genre = await Genre.findOne({ _id: value.genre }).exec();
     if (!genre) {
         throw new ClientError(400, 'Invalid genre');
     }
 
-    const movie = new Movie({
-        title: req.body.title,
-        genre: genre._id,
-        numberInStock: req.body.numberInStock,
-        dailyRentalRate: req.body.dailyRentalRate,
-    });
+    const movie = new Movie({ ...value });
     await movie.save();
 
     res.send({ data: movie._id });
 });
 
 router.put('/:id', [auth, admin, objectId], async (req, res) => {
-    const { error } = validateMovie(req.body);
+    const { error, value } = validateMovie(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
     }
 
-    const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
+    const genre = await Genre.findOne({ _id: value.genre }).exec();
     if (!genre) {
         throw new ClientError(400, 'Invalid genre');
     }
 
     const movie = await Movie.findOneAndUpdate(
         { _id: req.params.id },
-        {
-            title: req.body.title,
-            genre: genre._id,
-            numberInStock: req.body.numberInStock,
-            dailyRentalRate: req.body.dailyRentalRate,
-        },
+        { ...value },
         { new: true }
     ).exec();
 

@@ -18,21 +18,29 @@ const Movie = mongoose.model('movie', MovieSchema);
  *
  * @param {Object} movie
  * @param {string} movie.title
- * @param {string} movie.genreId
+ * @param {string} movie.genre
  * @param {number} movie.numberInStock
  * @param {number} movie.dailyRentalRate
  */
 function validateMovie(movie) {
     const schema = Joi.object({
         title: Joi.string().required(),
-        genreId: Joi.string().required(),
+        genre: Joi.string()
+            .custom((value, helpers) => {
+                if (!mongoose.isValidObjectId(value)) {
+                    throw new Error('it is not a valid ObjectID');
+                }
+
+                return value;
+            }, 'Mongoose Object ID')
+            .required(),
         numberInStock: Joi.number()
             .min(0)
             .required(),
         dailyRentalRate: Joi.number()
             .min(0)
             .required(),
-    });
+    }).options({ stripUnknown: true });
 
     return schema.validate(movie);
 }
