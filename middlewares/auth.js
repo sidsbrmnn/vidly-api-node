@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
 
+const ClientError = require('../util/error').ClientError;
+
 module.exports = function(req, res, next) {
     const token = req.header('x-auth-token');
     if (!token) {
-        res.status(401).send({ error: 'Please login to continue' });
-        return;
+        throw new ClientError(401, 'Please login to continue');
     }
 
     try {
@@ -14,6 +15,6 @@ module.exports = function(req, res, next) {
 
         next();
     } catch (error) {
-        res.status(400).send({ error: 'Invalid token. Please login again' });
+        throw new ClientError(400, 'Invalid token. Please login again');
     }
 };
