@@ -2,6 +2,7 @@ const express = require('express');
 
 const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
+const objectId = require('../middlewares/objectId');
 
 const { Genre, validateGenre } = require('../models/genre');
 
@@ -27,7 +28,7 @@ router.post('/', [auth, admin], async (req, res) => {
     res.send({ data: genre._id });
 });
 
-router.put('/:id', [auth, admin], async (req, res) => {
+router.put('/:id', [auth, admin, objectId], async (req, res) => {
     const { error } = validateGenre(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
@@ -45,7 +46,7 @@ router.put('/:id', [auth, admin], async (req, res) => {
     res.send({ data: genre._id });
 });
 
-router.delete('/:id', [auth, admin], async (req, res) => {
+router.delete('/:id', [auth, admin, objectId], async (req, res) => {
     const genre = await Genre.findOneAndDelete({ _id: req.params.id }).exec();
     if (!genre) {
         throw new ClientError(410, 'Genre does not exist');
@@ -54,7 +55,7 @@ router.delete('/:id', [auth, admin], async (req, res) => {
     res.send({ data: 'Genre deleted successfully' });
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', objectId, async (req, res) => {
     const genre = await Genre.findOne({ _id: req.params.id }).exec();
     if (!genre) {
         throw new ClientError(404, 'Genre not found');

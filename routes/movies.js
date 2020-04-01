@@ -2,6 +2,7 @@ const express = require('express');
 
 const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
+const objectId = require('../middlewares/objectId');
 
 const { Genre } = require('../models/genre');
 const { Movie, validateMovie } = require('../models/movie');
@@ -38,7 +39,7 @@ router.post('/', [auth, admin], async (req, res) => {
     res.send({ data: movie._id });
 });
 
-router.put('/:id', [auth, admin], async (req, res) => {
+router.put('/:id', [auth, admin, objectId], async (req, res) => {
     const { error } = validateMovie(req.body);
     if (error) {
         throw new ClientError(400, error.details[0].message);
@@ -63,7 +64,7 @@ router.put('/:id', [auth, admin], async (req, res) => {
     res.send({ data: movie._id });
 });
 
-router.delete('/:id', [auth, admin], async (req, res) => {
+router.delete('/:id', [auth, admin, objectId], async (req, res) => {
     const movie = await Movie.findOneAndDelete({ _id: req.params.id }).exec();
     if (!movie) {
         throw new ClientError(410, 'Movie does not exist');
@@ -72,7 +73,7 @@ router.delete('/:id', [auth, admin], async (req, res) => {
     res.send({ data: 'Movie deleted successfully' });
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', objectId, async (req, res) => {
     const movie = await Movie.findOne({ _id: req.params.id })
         .populate('genre')
         .exec();
