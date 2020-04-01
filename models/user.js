@@ -1,7 +1,8 @@
 const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+
+const jwt = require('../util/jwt');
 
 const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -24,8 +25,7 @@ UserSchema.method('checkPassword', async function(password) {
 });
 
 UserSchema.method('generateAuthToken', function() {
-    const secretKey = process.env.JWT_SECRET || 'some_secret';
-    const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin }, secretKey);
+    const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin });
     return token;
 });
 
