@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 require('./services/error');
+require('./services/config');
 
 const app = express();
 
