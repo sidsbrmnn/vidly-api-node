@@ -1,0 +1,13 @@
+{
+    "restartable": "rs",
+    "ignore": [".git", "node_modules/**/node_modules", "tests"],
+    "verbose": false,
+    "execMap": {
+        "js": "node"
+    },
+    "watch": ["*.*"],
+    "env": {
+        "NODE_ENV": "development"
+    },
+    "ext": "js"
+}
