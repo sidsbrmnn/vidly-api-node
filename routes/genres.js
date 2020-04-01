@@ -1,5 +1,7 @@
 const express = require('express');
 
+const auth = require('../middlewares/auth');
+
 const Genre = require('../models/genre');
 
 const router = express.Router();
@@ -10,14 +12,14 @@ router.get('/', async (req, res) => {
     res.send({ data: genres });
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     const genre = new Genre({ name: req.body.name });
     await genre.save();
 
     res.send({ data: genre._id });
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     const genre = await Genre.findOneAndUpdate(
         { _id: req.params.id },
         { name: req.body.name },
@@ -31,7 +33,7 @@ router.put('/:id', async (req, res) => {
     res.send({ data: genre._id });
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     const genre = await Genre.findOneAndDelete({ _id: req.params.id }).exec();
     if (!genre) {
         res.status(404).send({ error: 'No such document found' });
