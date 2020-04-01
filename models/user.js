@@ -44,7 +44,7 @@ function validateUser(user) {
         name: Joi.string().required(),
         email: Joi.string()
             .email()
-            .password(),
+            .required(),
         password: Joi.string().required(),
         isAdmin: Joi.boolean(),
     }).options({ stripUnknown: true });
