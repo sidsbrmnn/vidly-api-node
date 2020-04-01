@@ -16,6 +16,8 @@ mongoose
         console.log('Connected to MongoDB');
     });
 
+app.use('/api/genres', require('./routes/genres'));
+
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 app.listen(PORT, () => {
     console.log('Listening on port:', PORT);
