@@ -1,6 +1,6 @@
 require('express-async-errors');
 
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
     console.log('Uncaught exception:', error);
     process.exit(1);
 });

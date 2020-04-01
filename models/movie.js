@@ -26,7 +26,7 @@ function validateMovie(movie) {
     const schema = Joi.object({
         title: Joi.string().required(),
         genre: Joi.string()
-            .custom((value, helpers) => {
+            .custom((value) => {
                 if (!mongoose.isValidObjectId(value)) {
                     throw new Error('it is not a valid ObjectID');
                 }
