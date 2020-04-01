@@ -1,3 +1,4 @@
+const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -30,4 +31,26 @@ UserSchema.method('generateAuthToken', function() {
 
 const User = mongoose.model('user', UserSchema);
 
-module.exports = User;
+/**
+ *
+ * @param {Object} user
+ * @param {string} user.name
+ * @param {string} user.email
+ * @param {string} user.password
+ * @param {boolean} [user.isAdmin]
+ */
+function validateUser(user) {
+    const schema = Joi.object({
+        name: Joi.string().required(),
+        email: Joi.string()
+            .email()
+            .password(),
+        password: Joi.string().required(),
+        isAdmin: Joi.boolean(),
+    });
+
+    return schema.validate(user);
+}
+
+module.exports.User = User;
+module.exports.validateUser = validateUser;

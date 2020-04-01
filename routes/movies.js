@@ -3,8 +3,8 @@ const express = require('express');
 const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
 
-const Genre = require('../models/genre');
-const Movie = require('../models/movie');
+const { Genre } = require('../models/genre');
+const { Movie, validateMovie } = require('../models/movie');
 
 const ClientError = require('../util/error').ClientError;
 
@@ -17,6 +17,11 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [auth, admin], async (req, res) => {
+    const { error } = validateMovie(req.body);
+    if (error) {
+        throw new ClientError(400, error.details[0].message);
+    }
+
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
         throw new ClientError(400, 'Invalid genre');
@@ -34,6 +39,11 @@ router.post('/', [auth, admin], async (req, res) => {
 });
 
 router.put('/:id', [auth, admin], async (req, res) => {
+    const { error } = validateMovie(req.body);
+    if (error) {
+        throw new ClientError(400, error.details[0].message);
+    }
+
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
         throw new ClientError(400, 'Invalid genre');

@@ -3,7 +3,7 @@ const express = require('express');
 const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
 
-const Genre = require('../models/genre');
+const { Genre, validateGenre } = require('../models/genre');
 
 const ClientError = require('../util/error').ClientError;
 
@@ -16,6 +16,11 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [auth, admin], async (req, res) => {
+    const { error } = validateGenre(req.body);
+    if (error) {
+        throw new ClientError(400, error.details[0].message);
+    }
+
     const genre = new Genre({ name: req.body.name });
     await genre.save();
 
@@ -23,6 +28,11 @@ router.post('/', [auth, admin], async (req, res) => {
 });
 
 router.put('/:id', [auth, admin], async (req, res) => {
+    const { error } = validateGenre(req.body);
+    if (error) {
+        throw new ClientError(400, error.details[0].message);
+    }
+
     const genre = await Genre.findOneAndUpdate(
         { _id: req.params.id },
         { name: req.body.name },

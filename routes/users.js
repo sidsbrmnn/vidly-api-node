@@ -1,12 +1,17 @@
 const express = require('express');
 
-const User = require('../models/user');
+const { User, validateUser } = require('../models/user');
 
 const ClientError = require('../util/error').ClientError;
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
+    const { error } = validateUser(req.body);
+    if (error) {
+        throw new ClientError(400, error.details[0].message);
+    }
+
     let user = await User.findOne({ email: req.body.email }).exec();
     if (user) {
         throw new ClientError(409, 'User already exists. Please login');

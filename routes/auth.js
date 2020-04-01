@@ -2,7 +2,7 @@ const express = require('express');
 
 const auth = require('../middlewares/auth');
 
-const User = require('../models/user');
+const { User } = require('../models/user');
 
 const ClientError = require('../util/error').ClientError;
 
