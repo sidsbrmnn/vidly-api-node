@@ -8,6 +8,7 @@ module.exports = function(req, res, next) {
     }
 
     try {
+        const secretKey = process.env.JWT_SECRET || 'some_secret';
         const decoded = jwt.verify(token, secretKey);
         res.locals.user = decoded;
 
