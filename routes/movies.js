@@ -1,5 +1,6 @@
 const express = require('express');
 
+const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
 
 const Genre = require('../models/genre');
@@ -13,7 +14,7 @@ router.get('/', async (req, res) => {
     res.send({ data: movies });
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', [auth, admin], async (req, res) => {
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
         res.status(400).send({ error: 'Invalid genre' });
@@ -31,7 +32,7 @@ router.post('/', auth, async (req, res) => {
     res.send({ data: movie._id });
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', [auth, admin], async (req, res) => {
     const genre = await Genre.findOne({ _id: req.body.genreId }).exec();
     if (!genre) {
         res.status(400).send({ error: 'Invalid genre' });
@@ -52,7 +53,7 @@ router.put('/:id', auth, async (req, res) => {
     res.send({ data: movie._id });
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
     const movie = await Movie.findOneAndDelete({ _id: req.params.id }).exec();
     if (!movie) {
         res.status(404).send({ error: 'No such document found' });
