@@ -6,6 +6,12 @@ module.exports = function (err, req, res, next) {
             res.status(err.statusCode).send({ error: err.message });
             break;
 
+        case 'TokenExpiredError':
+        case 'JsonWebTokenError':
+        case 'NotBeforeError':
+            res.status(400).send({ error: err.message });
+            break;
+
         default:
             if (process.env.NODE_ENV !== 'production') {
                 logger.error(err);

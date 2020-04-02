@@ -7,12 +7,8 @@ module.exports = function(req, res, next) {
         throw new ClientError(401, 'Please login to continue');
     }
 
-    try {
-        const decoded = jwt.verify(token);
-        res.locals.user = decoded;
+    const decoded = jwt.verify(token);
+    res.locals.user = decoded;
 
-        next();
-    } catch (error) {
-        throw new ClientError(400, 'Invalid token. Please login again');
-    }
+    next();
 };
