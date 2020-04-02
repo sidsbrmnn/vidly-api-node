@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
+const logger = require('./services/logger');
+
 require('./services/error');
 require('./services/config');
 
@@ -16,12 +18,12 @@ mongoose
         useUnifiedTopology: true,
     })
     .then(() => {
-        console.log('Connected to MongoDB');
+        logger.info('Connected to MongoDB');
     });
 
 require('./services/routes')(app);
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 app.listen(PORT, () => {
-    console.log('Listening on port:', PORT);
+    logger.info('Listening on port: ', { message: PORT });
 });
