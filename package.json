@@ -16,12 +16,15 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0",
+    "eslint-plugin-jest": "^23.8.2",
+    "jest": "^25.2.4",
     "nodemon": "^2.0.2",
     "prettier": "^2.0.2"
   },
   "scripts": {
+    "start": "node .",
     "dev": "nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
