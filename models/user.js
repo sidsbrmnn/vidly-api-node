@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema({
     isAdmin: { type: Boolean, default: false },
 });
 
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(this.password, salt);
     this.password = hashedPassword;
@@ -19,12 +19,12 @@ UserSchema.pre('save', async function(next) {
     next();
 });
 
-UserSchema.method('checkPassword', async function(password) {
+UserSchema.method('checkPassword', async function (password) {
     const isValidPassword = await bcrypt.compare(password, this.password);
     return isValidPassword;
 });
 
-UserSchema.method('generateAuthToken', function() {
+UserSchema.method('generateAuthToken', function () {
     const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin });
     return token;
 });
@@ -42,9 +42,7 @@ const User = mongoose.model('user', UserSchema);
 function validateUser(user) {
     const schema = Joi.object({
         name: Joi.string().required(),
-        email: Joi.string()
-            .email()
-            .required(),
+        email: Joi.string().email().required(),
         password: Joi.string().required(),
         isAdmin: Joi.boolean(),
     }).options({ stripUnknown: true });

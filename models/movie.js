@@ -34,12 +34,8 @@ function validateMovie(movie) {
                 return value;
             }, 'Mongoose Object ID')
             .required(),
-        numberInStock: Joi.number()
-            .min(0)
-            .required(),
-        dailyRentalRate: Joi.number()
-            .min(0)
-            .required(),
+        numberInStock: Joi.number().min(0).required(),
+        dailyRentalRate: Joi.number().min(0).required(),
     }).options({ stripUnknown: true });
 
     return schema.validate(movie);
