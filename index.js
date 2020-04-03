@@ -28,4 +28,22 @@ const server = app.listen(PORT, () => {
     logger.info('Listening on port: ', { message: PORT });
 });
 
+process.on('SIGTERM', () => {
+    server.close((err) => {
+        if (err) {
+            throw err;
+        }
+
+        logger.info('Server has closed');
+        mongoose.connection.close((err) => {
+            if (err) {
+                throw err;
+            }
+
+            logger.info('Disconnected from MongoDB');
+            process.exit(0);
+        });
+    });
+});
+
 module.exports = server;
