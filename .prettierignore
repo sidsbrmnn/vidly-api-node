@@ -1,6 +1,7 @@
 .editorconfig
 ,gitignore
 .prettierignore
+.travis.yml
 package-lock.json
 package.json
 README.md
