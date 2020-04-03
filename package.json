@@ -25,7 +25,7 @@
   "scripts": {
     "start": "node .",
     "dev": "nodemon",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "repository": {
     "type": "git",
