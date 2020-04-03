@@ -52,7 +52,7 @@ router.delete('/:id', [auth, admin, objectId], async (req, res) => {
         throw new ClientError(410, 'Genre does not exist');
     }
 
-    res.send({ data: 'Genre deleted successfully' });
+    res.send({ data: genre._id });
 });
 
 router.get('/:id', objectId, async (req, res) => {
