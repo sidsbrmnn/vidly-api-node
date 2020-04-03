@@ -61,7 +61,7 @@ describe('/api/genres', () => {
             expect(res.status).toBe(400);
         });
 
-        it('should return 404 if no genre with the given id exists', async () => {
+        it('should return 404 if genre with given id was not found', async () => {
             const id = mongoose.Types.ObjectId();
             const res = await request.get('/api/genres/' + id);
 
@@ -100,20 +100,20 @@ describe('/api/genres', () => {
             expect(res.status).toBe(401);
         });
 
-        it('should return 400 if genre is invalid', async () => {
+        it('should return 400 if invalid name is passed', async () => {
             const res = await exec({ sendValidGenre: false });
 
             expect(res.status).toBe(400);
         });
 
-        it('should save the genre if it is valid', async () => {
+        it('should save the genre if valid name is passed', async () => {
             await exec();
             const genre = await Genre.find({ name }).exec();
 
             expect(genre).not.toBeNull();
         });
 
-        it('should return the genre id if it is valid', async () => {
+        it('should return the genre id if valid name is passed', async () => {
             const res = await exec();
 
             expect(res.body).toHaveProperty('data');
@@ -160,25 +160,25 @@ describe('/api/genres', () => {
             expect(res.status).toBe(401);
         });
 
-        it('should return 400 if genre is invalid', async () => {
+        it('should return 400 if invalid name is passed', async () => {
             const res = await exec({ sendValidGenre: false });
 
             expect(res.status).toBe(400);
         });
 
-        it('should return 404 if id is invalid', async () => {
+        it('should return 400 if invalid id is passed', async () => {
             const res = await exec({ sendValidId: false });
 
             expect(res.status).toBe(400);
         });
 
-        it('should return 404 if genre with the given id was not found', async () => {
+        it('should return 404 if genre with given id was not found', async () => {
             const res = await exec({ sendNotFoundId: true });
 
             expect(res.status).toBe(404);
         });
 
-        it('should update the genre if input is valid', async () => {
+        it('should update the genre if valid name and id is passed', async () => {
             await exec();
 
             const updatedGenre = await Genre.findOne({ _id: genre._id }).exec();
@@ -186,7 +186,7 @@ describe('/api/genres', () => {
             expect(updatedGenre.name).toBe(newName);
         });
 
-        it('should return the updated genre id if it is valid', async () => {
+        it('should return updated genre id if valid name and id is passed', async () => {
             const res = await exec();
 
             expect(res.body).toHaveProperty('data');
@@ -231,19 +231,19 @@ describe('/api/genres', () => {
             expect(res.status).toBe(401);
         });
 
-        it('should return 400 if id is invalid', async () => {
+        it('should return 400 if invalid id is passed', async () => {
             const res = await exec({ sendValidId: false });
 
             expect(res.status).toBe(400);
         });
 
-        it('should return 410 if no genre with the given id was found', async () => {
+        it('should return 410 if genre with given id was not found', async () => {
             const res = await exec({ sendNotFoundId: true });
 
             expect(res.status).toBe(410);
         });
 
-        it('should delete the genre if genre with the given id was found', async () => {
+        it('should delete the genre if valid id is passed', async () => {
             await exec();
 
             const genreInDb = await Genre.findOne({ _id: genre._id }).exec();
@@ -251,7 +251,7 @@ describe('/api/genres', () => {
             expect(genreInDb).toBeNull();
         });
 
-        it('should return the removed genre id', async () => {
+        it('should return removed genre id if valid id is passed', async () => {
             const res = await exec();
 
             expect(res.body).toHaveProperty('data', genre.id);
