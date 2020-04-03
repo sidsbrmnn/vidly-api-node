@@ -24,6 +24,8 @@ mongoose
 require('./services/routes')(app);
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     logger.info('Listening on port: ', { message: PORT });
 });
+
+module.exports = server;
