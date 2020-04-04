@@ -6,6 +6,30 @@ const server = require('../..');
 const { Genre } = require('../../models/genre');
 const { User } = require('../../models/user');
 
+function testNotFound(exec) {
+    it('should return 400 if invalid id is passed', async () => {
+        const res = await exec({ sendValidId: false });
+
+        expect(res.status).toBe(400);
+    });
+}
+
+function testInvalidGenreId(exec) {
+    it('should return 404 if genre with given id was not found', async () => {
+        const res = await exec({ sendNotFoundId: true });
+
+        expect(res.status).toBe(404);
+    });
+}
+
+function testNotLoggedIn(exec) {
+    it('should return 401 if client is not logged in', async () => {
+        const res = await exec({ sendToken: false });
+
+        expect(res.status).toBe(401);
+    });
+}
+
 describe('/api/genres', () => {
     let request;
 
@@ -34,7 +58,7 @@ describe('/api/genres', () => {
 
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data.length).toBe(2);
+            expect(res.body.data.length).toBe(genres.length);
             genres.forEach((genre) =>
                 expect(
                     res.body.data.some((g) => g.name === genre.name)
@@ -44,29 +68,41 @@ describe('/api/genres', () => {
     });
 
     describe('GET /:id', () => {
-        it('should return a genre if valid id is passed', async () => {
-            const genre = new Genre({ name: 'Genre 1' });
-            await genre.save();
+        let genre;
 
-            const res = await request.get('/api/genres/' + genre.id);
+        beforeAll(async () => {
+            genre = await new Genre({ name: 'Genre 1' }).save();
+        });
+
+        const exec = (options = {}) => {
+            const defaults = {
+                sendValidId: true,
+                sendNotFoundId: false,
+            };
+            const parsed = Object.assign({}, defaults, options);
+
+            const values = {
+                id: parsed.sendValidId
+                    ? parsed.sendNotFoundId
+                        ? mongoose.Types.ObjectId()
+                        : genre.id
+                    : '1',
+            };
+
+            return request.get('/api/genres/' + values.id);
+        };
+
+        it('should return a genre if valid id is passed', async () => {
+            const res = await exec();
 
             expect(res.status).toBe(200);
             expect(res.body).toHaveProperty('data');
             expect(res.body.data).toHaveProperty('name', genre.name);
         });
 
-        it('should return 400 if invalid id is passed', async () => {
-            const res = await request.get('/api/genres/1');
+        testNotFound(exec);
 
-            expect(res.status).toBe(400);
-        });
-
-        it('should return 404 if genre with given id was not found', async () => {
-            const id = mongoose.Types.ObjectId();
-            const res = await request.get('/api/genres/' + id);
-
-            expect(res.status).toBe(404);
-        });
+        testInvalidGenreId(exec);
     });
 
     describe('POST /', () => {
@@ -94,11 +130,7 @@ describe('/api/genres', () => {
                 .send({ name: values.name });
         };
 
-        it('should return 401 if client is not logged in', async () => {
-            const res = await exec({ sendToken: false });
-
-            expect(res.status).toBe(401);
-        });
+        testNotLoggedIn(exec);
 
         it('should return 400 if invalid name is passed', async () => {
             const res = await exec({ sendValidGenre: false });
@@ -108,7 +140,8 @@ describe('/api/genres', () => {
 
         it('should save the genre if valid name is passed', async () => {
             await exec();
-            const genre = await Genre.find({ name }).exec();
+
+            const genre = await Genre.find({ name });
 
             expect(genre).not.toBeNull();
         });
@@ -154,11 +187,7 @@ describe('/api/genres', () => {
                 .send({ name: values.name });
         };
 
-        it('should return 401 if client is not logged in', async () => {
-            const res = await exec({ sendToken: false });
-
-            expect(res.status).toBe(401);
-        });
+        testNotLoggedIn(exec);
 
         it('should return 400 if invalid name is passed', async () => {
             const res = await exec({ sendValidGenre: false });
@@ -166,22 +195,14 @@ describe('/api/genres', () => {
             expect(res.status).toBe(400);
         });
 
-        it('should return 400 if invalid id is passed', async () => {
-            const res = await exec({ sendValidId: false });
+        testNotFound(exec);
 
-            expect(res.status).toBe(400);
-        });
-
-        it('should return 404 if genre with given id was not found', async () => {
-            const res = await exec({ sendNotFoundId: true });
-
-            expect(res.status).toBe(404);
-        });
+        testInvalidGenreId(exec);
 
         it('should update the genre if valid name and id is passed', async () => {
             await exec();
 
-            const updatedGenre = await Genre.findOne({ _id: genre._id }).exec();
+            const updatedGenre = await Genre.findOne({ _id: genre._id });
 
             expect(updatedGenre.name).toBe(newName);
         });
@@ -223,30 +244,16 @@ describe('/api/genres', () => {
                 .set('x-auth-token', values.token);
         };
 
-        it('should return 401 if client is not logged in', async () => {
-            token = '';
+        testNotLoggedIn(exec);
 
-            const res = await exec({ sendToken: false });
+        testNotFound(exec);
 
-            expect(res.status).toBe(401);
-        });
-
-        it('should return 400 if invalid id is passed', async () => {
-            const res = await exec({ sendValidId: false });
-
-            expect(res.status).toBe(400);
-        });
-
-        it('should return 410 if genre with given id was not found', async () => {
-            const res = await exec({ sendNotFoundId: true });
-
-            expect(res.status).toBe(410);
-        });
+        testInvalidGenreId(exec);
 
         it('should delete the genre if valid id is passed', async () => {
             await exec();
 
-            const genreInDb = await Genre.findOne({ _id: genre._id }).exec();
+            const genreInDb = await Genre.findOne({ _id: genre._id });
 
             expect(genreInDb).toBeNull();
         });
