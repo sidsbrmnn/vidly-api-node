@@ -15,10 +15,7 @@ router.post('/', auth, async (req, res) => {
         throw new ClientError(400, error.details[0].message);
     }
 
-    const rental = await Rental.lookup(value.customer, value.movie)
-        .populate('customer')
-        .movie('movie')
-        .exec();
+    const rental = await Rental.lookup(value.customer, value.movie);
     if (!rental) {
         throw new ClientError(404, 'Rental not found');
     }
@@ -31,9 +28,14 @@ router.post('/', auth, async (req, res) => {
         { _id: value.movie },
         { $inc: { numberInStock: 1 } }
     );
+
     rental.return();
     await Promise.all([rental.save(), movie.exec()]);
 
+    await Rental.populate(rental, [
+        { path: 'customer' },
+        { path: 'movie', populate: { path: 'genre' } },
+    ]);
     return res.send({ data: rental });
 });
 

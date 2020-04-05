@@ -18,10 +18,9 @@ const RentalSchema = new mongoose.Schema({
 });
 
 RentalSchema.statics.lookup = function (customer, movie) {
-    return this.findOne({
-        customer: customer,
-        movie: movie,
-    });
+    return this.findOne({ customer, movie })
+        .populate({ path: 'movie', select: 'dailyRentalRate' })
+        .exec();
 };
 
 RentalSchema.methods.return = function () {
