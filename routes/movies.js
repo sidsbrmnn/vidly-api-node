@@ -50,6 +50,9 @@ router.put('/:id', [auth, admin, objectId], async (req, res) => {
         { ...value },
         { new: true }
     ).exec();
+    if (!movie) {
+        throw new ClientError(404, 'Movie not found');
+    }
 
     res.send({ data: movie._id });
 });
@@ -57,10 +60,10 @@ router.put('/:id', [auth, admin, objectId], async (req, res) => {
 router.delete('/:id', [auth, admin, objectId], async (req, res) => {
     const movie = await Movie.findOneAndDelete({ _id: req.params.id }).exec();
     if (!movie) {
-        throw new ClientError(410, 'Movie does not exist');
+        throw new ClientError(404, 'Movie not found');
     }
 
-    res.send({ data: 'Movie deleted successfully' });
+    res.send({ data: movie._id });
 });
 
 router.get('/:id', objectId, async (req, res) => {
