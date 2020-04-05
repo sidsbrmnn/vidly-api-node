@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
         throw new ClientError(401, 'Invalid email. Please register');
     }
 
-    if (!user.checkPassword(req.body.password)) {
+    if (!(await user.checkPassword(req.body.password))) {
         throw new ClientError(401, 'Invalid password');
     }
 

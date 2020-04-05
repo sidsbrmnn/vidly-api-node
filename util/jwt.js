@@ -20,6 +20,14 @@ class Jwt {
     verify(token) {
         return jwt.verify(token, this.secretKey);
     }
+
+    /**
+     *
+     * @param {string} token
+     */
+    decode(token) {
+        return jwt.decode(token);
+    }
 }
 
 module.exports = new Jwt();
