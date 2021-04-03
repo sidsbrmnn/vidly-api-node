@@ -1,54 +1,63 @@
-const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
-const jwt = require('../util/jwt');
+/**
+ * Compares the plain text password with the encrypted one.
+ *
+ * @param {string} password - Plain text
+ * @returns A promise to be either resolved with the comparision result salt or
+ * rejected with an Error
+ */
+function comparePassword(password) {
+  return bcrypt.compare(this.password, password);
+}
 
-const UserSchema = new mongoose.Schema({
+/**
+ * Generates a signed JWT string for the user document.
+ *
+ * @returns The signed JSON Web Token string
+ */
+function generateAuthToken() {
+  return jwt.sign(
+    { name: this.name, role: this.role },
+    process.env.JWT_SECRET,
+    { subject: this.id }
+  );
+}
+
+const UserSchema = new mongoose.Schema(
+  {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    isAdmin: { type: Boolean, default: false },
-});
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      transform: function (doc, ret) {
+        delete ret.password;
+        return ret;
+      },
+    },
+  }
+);
+
+UserSchema.method('comparePassword', comparePassword);
+UserSchema.method('generateAuthToken', generateAuthToken);
 
 UserSchema.pre('save', async function (next) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(this.password, salt);
-    this.password = hashedPassword;
-
+  try {
+    if (this.isDirectModified('password')) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
     next();
-});
-
-UserSchema.method('checkPassword', async function (password) {
-    const isValidPassword = await bcrypt.compare(password, this.password);
-    return isValidPassword;
-});
-
-UserSchema.method('generateAuthToken', function () {
-    const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin });
-    return token;
+  } catch (err) {
+    next(err);
+  }
 });
 
 const User = mongoose.model('user', UserSchema);
 
-/**
- *
- * @param {Object} user
- * @param {string} user.name
- * @param {string} user.email
- * @param {string} user.password
- * @param {boolean} [user.isAdmin]
- */
-function validateUser(user) {
-    const schema = Joi.object({
-        name: Joi.string().required(),
-        email: Joi.string().email().required(),
-        password: Joi.string().required(),
-        isAdmin: Joi.boolean(),
-    }).options({ stripUnknown: true });
-
-    return schema.validate(user);
-}
-
-module.exports.User = User;
-module.exports.validateUser = validateUser;
+module.exports = User;

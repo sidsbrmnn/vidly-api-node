@@ -1,36 +1,39 @@
 const express = require('express');
-
+const Joi = require('joi');
 const auth = require('../middlewares/auth');
-
-const { User } = require('../models/user');
-
-const ClientError = require('../util/error').ClientError;
+const User = require('../models/user');
+const HttpError = require('../utils/http-error');
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
-    const user = await User.findOne({ email: req.body.email }).exec();
-    if (!user) {
-        throw new ClientError(401, 'Invalid email. Please register');
-    }
-
-    if (!(await user.checkPassword(req.body.password))) {
-        throw new ClientError(401, 'Invalid password');
-    }
-
-    const token = user.generateAuthToken();
-    res.send({ data: token });
+const schema = Joi.object({
+  email: Joi.string().trim().lowercase().email().required(),
+  password: Joi.string().required(),
 });
 
-router.get('/me', auth, async (req, res) => {
-    const user = await User.findOne({ _id: res.locals.user._id })
-        .select('-password')
-        .exec();
-    if (!user) {
-        throw new ClientError(410, 'User does not exist');
-    }
+router.get('/', auth, async (req, res) => {
+  const user = await User.findOne({ _id: req.user.sub });
+  res.send({ data: user });
+});
 
-    res.send({ data: user });
+router.post('/', async (req, res) => {
+  const { error, value } = schema.validate(req.body, { stripUnknown: true });
+  if (error) {
+    throw new HttpError(400, error.details[0].message);
+  }
+
+  const user = await User.findOne({ email: value.email });
+  if (!user) {
+    throw new HttpError(401, 'Invalid email or password.');
+  }
+
+  const isValidPassword = await user.comparePassword(value.password);
+  if (!isValidPassword) {
+    throw new HttpError(401, 'Invalid email or password.');
+  }
+
+  const token = user.generateAuthToken();
+  res.send({ data: token });
 });
 
 module.exports = router;
