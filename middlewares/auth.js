@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
 const HttpError = require('../utils/http-error');
 
 /**
@@ -10,7 +9,7 @@ const HttpError = require('../utils/http-error');
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-module.exports = async function (req, res, next) {
+module.exports = function (req, res, next) {
   const value = req.headers.authorization;
   if (!value) {
     throw new HttpError(401, 'No session found. Please login.');
@@ -25,11 +24,6 @@ module.exports = async function (req, res, next) {
    * @type {{iat: number; name: string; role: string; sub: string}}
    */
   const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
-  const user = await User.findOne({ _id: decoded.sub });
-  if (!user) {
-    throw new HttpError(401, 'Invalid session. Please login again.');
-  }
-
   req.user = decoded;
   next();
 };
