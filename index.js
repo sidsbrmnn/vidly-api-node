@@ -46,11 +46,6 @@ app.use('/api/users', require('./routes/users'));
 
 app.use(require('./middlewares/error'));
 
-/**
- * @type {import('http').Server}
- */
-let server;
-
 (async () => {
   await mongoose.connect(process.env.MONGO_URI, {
     useCreateIndex: true,
@@ -61,24 +56,9 @@ let server;
   console.log('Connected to MongoDB');
 
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-  server = app.listen(PORT, () => {
+  app.listen(PORT, () => {
     console.log(`Listening on port :${PORT}`);
   });
 })();
 
-process.on('SIGTERM', () => {
-  server.close(async (err) => {
-    if (err) {
-      throw err;
-    }
-
-    console.log('Server has closed');
-
-    await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
-
-    process.exit(0);
-  });
-});
-
-module.exports = server;
+module.exports = app;
