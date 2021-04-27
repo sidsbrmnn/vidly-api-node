@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "esnext"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "express.d.ts",
+    "index.d.ts",
+    "**/*.js"
+  ],
+  "typeAcquisition": {
+    "exclude": [
+      "dotenv"
+    ]
+  }
+}
