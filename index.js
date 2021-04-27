@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const express = require('express');
 require('express-async-errors');
 const helmet = require('helmet');
-const mongoose = require('mongoose');
+const path = require('path');
 const morgan = require('morgan');
 
 process.on('uncaughtException', (err) => {
@@ -18,20 +18,23 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Load .env file contents to process.env
-dotenv.config();
+const { error } = dotenv.config({ path: path.join(__dirname, '.env') });
+if (error) {
+  throw error;
+}
 
-const IS_PROD = process.env.NODE_ENV === 'production';
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(morgan(IS_PROD ? 'combined' : 'dev'));
+app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(cors({ credentials: true }));
 
 // Setup production-only middlewares
-if (IS_PROD) {
+if (NODE_ENV === 'production') {
   app.use(helmet());
   app.use(compression());
 }
@@ -46,19 +49,8 @@ app.use('/api/users', require('./routes/users'));
 
 app.use(require('./middlewares/error'));
 
-(async () => {
-  await mongoose.connect(process.env.MONGO_URI, {
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  console.log('Connected to MongoDB');
-
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-  app.listen(PORT, () => {
-    console.log(`Listening on port :${PORT}`);
-  });
-})();
-
-module.exports = app;
+console.log(`Starting in ${NODE_ENV} mode`);
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+app.listen(PORT, () => {
+  console.log(`Listening on port :${PORT}`);
+});
