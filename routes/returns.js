@@ -2,21 +2,13 @@ const express = require('express');
 const Joi = require('joi');
 const moment = require('moment');
 const auth = require('../middlewares/auth');
-const Movie = require('../models/movie');
-const Rental = require('../models/rental');
 const HttpError = require('../utils/http-error');
+const knex = require('../utils/knex');
 
 const router = express.Router();
 
 const schema = Joi.object({
-  customerId: Joi.string()
-    .trim()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required(),
-  movieId: Joi.string()
-    .trim()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .required(),
+  rental_id: Joi.number().min(0).required(),
 });
 
 router.post('/', auth, async (req, res) => {
@@ -25,47 +17,36 @@ router.post('/', auth, async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  let rental = await Rental.findOne({
-    customer: value.customerId,
-    movie: value.movieId,
-  })
-    .populate('movie')
-    .exec();
+  const rental = await knex('rentals').where('id', value.rental_id).first();
   if (!rental) {
-    throw new HttpError(405, 'Customer has not rented the selected movie.');
-  }
-  if (rental.dateReturned) {
-    throw new HttpError(405, 'Return has already been processed.');
+    throw new HttpError(404, 'Rental not found');
   }
 
-  const session = await Rental.startSession();
-  session.startTransaction();
+  await knex.transaction(async (trx) => {
+    const ret = await knex('returns').where('rental_id', rental.id).first();
+    if (ret) {
+      throw new HttpError(409, 'Return already processed');
+    }
 
-  try {
-    rental = await rental.update(
-      {
-        dateReturned: Date.now(),
-        rentalFee:
-          moment().diff(this.dateOut, 'days') * rental.movie.dailyRentalRate,
-      },
-      { new: true, session }
-    );
-    await Movie.findOneAndUpdate(
-      { _id: rental.movie._id },
-      { $inc: { numberInStock: 1 } },
-      { session }
-    );
+    const movie = await knex('movies')
+      .transacting(trx)
+      .forUpdate()
+      .where('id', rental.movie_id)
+      .first();
+    value.fee = moment().diff(movie.created_at, 'days') * movie.rental_rate;
 
-    await session.commitTransaction();
-    session.endSession();
+    const result = await knex('returns')
+      .transacting(trx)
+      .insert(value)
+      .returning('*');
 
-    res.send({ data: rental });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
+    await knex('movies')
+      .transacting(trx)
+      .increment('stock', 1)
+      .where('id', movie.id);
 
-    throw new HttpError(500, 'Unable to return the movie at the momenet.');
-  }
+    res.send({ data: result[0] });
+  });
 });
 
 module.exports = router;

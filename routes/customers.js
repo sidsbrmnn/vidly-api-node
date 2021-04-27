@@ -1,8 +1,8 @@
 const express = require('express');
 const Joi = require('joi');
 const auth = require('../middlewares/auth');
-const Customer = require('../models/customer');
 const HttpError = require('../utils/http-error');
+const knex = require('../utils/knex');
 
 const router = express.Router();
 
@@ -13,12 +13,12 @@ const schema = Joi.object({
     .trim()
     .pattern(/^[6-9]\d{9}$/)
     .required(),
-  isGold: Joi.boolean(),
 });
 
 router.get('/', auth, async (req, res) => {
-  const customers = await Customer.find().sort('name');
-  res.send({ data: customers });
+  const result = await knex('customers').orderBy('name');
+
+  res.send({ data: result });
 });
 
 router.post('/', auth, async (req, res) => {
@@ -27,15 +27,23 @@ router.post('/', auth, async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  let customer = await Customer.findOne({
-    $or: [{ email: value.email }, { phone: value.phone }],
-  });
-  if (customer) {
-    throw new HttpError(409, 'Customer already exists');
-  }
+  await knex.transaction(async (trx) => {
+    const customers = await knex('customers')
+      .where('email', value.email)
+      .orWhere('phone', value.phone)
+      .first()
+      .transacting(trx);
+    if (customers) {
+      throw new HttpError(409, 'Customer already exists');
+    }
 
-  customer = await Customer.create({ ...value });
-  res.send({ data: customer });
+    const result = await knex('customers')
+      .insert(value)
+      .returning('*')
+      .transacting(trx);
+
+    res.send({ data: result[0] });
+  });
 });
 
 router.put('/:id', auth, async (req, res) => {
@@ -44,34 +52,67 @@ router.put('/:id', auth, async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  const customer = await Customer.findOneAndUpdate(
-    { _id: req.params.id },
-    { ...value },
-    { new: true }
-  );
-  if (!customer) {
-    throw new HttpError(404, 'The customer with the given ID was not found.');
-  }
+  await knex.transaction(async (trx) => {
+    const customers = await knex('customers')
+      .transacting(trx)
+      .where('email', value.email)
+      .orWhere('phone', value.phone)
+      .andWhereNot('id', parseInt(req.params.id, 10));
+    if (customers.length) {
+      throw new HttpError(409, 'Customer already exists');
+    }
 
-  res.send({ data: customer });
+    const result = await knex('customers')
+      .transacting(trx)
+      .update(value)
+      .where('id', parseInt(req.params.id, 10));
+    if (!result) {
+      throw new HttpError(404, 'Customer not found');
+    }
+
+    res.send({ data: result });
+  });
 });
 
 router.delete('/:id', auth, async (req, res) => {
-  const customer = await Customer.findOneAndDelete({ _id: req.params.id });
-  if (!customer) {
-    throw new HttpError(404, 'The customer with the given ID was not found.');
+  const result = await knex('customers')
+    .where('id', parseInt(req.params.id, 10))
+    .del();
+  if (!result) {
+    throw new HttpError(404, 'Customer not found');
   }
 
-  res.send({ data: customer });
+  res.send({ data: result });
 });
 
 router.get('/:id', auth, async (req, res) => {
-  const customer = await Customer.findOne({ _id: req.params.id });
+  const customer = await knex('customers')
+    .where('id', parseInt(req.params.id, 10))
+    .first();
   if (!customer) {
-    throw new HttpError(404, 'The customer with the given ID was not found.');
+    throw new HttpError(404, 'Customer not found');
   }
 
-  res.send({ data: customer });
+  const rentals = await knex('rentals').where('customer_id', customer.id);
+  const movies = await knex('movies').whereIn(
+    'id',
+    rentals.map((rental) => rental.movie_id)
+  );
+  const returns = await knex('returns').whereIn(
+    'rental_id',
+    rentals.map((rental) => rental.id)
+  );
+
+  const data = {
+    ...customer,
+    rentals: rentals.map((rental) => ({
+      ...rental,
+      movie: movies.find((movie) => movie.id === rental.movie_id),
+      returned: Boolean(returns.find((ret) => ret.rental_id === rental.id)),
+    })),
+  };
+
+  res.send({ data });
 });
 
 module.exports = router;

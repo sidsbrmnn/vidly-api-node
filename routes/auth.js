@@ -1,8 +1,10 @@
+const bcrypt = require('bcrypt');
 const express = require('express');
 const Joi = require('joi');
+const jwt = require('jsonwebtoken');
 const auth = require('../middlewares/auth');
-const User = require('../models/user');
 const HttpError = require('../utils/http-error');
+const knex = require('../utils/knex');
 
 const router = express.Router();
 
@@ -12,8 +14,11 @@ const schema = Joi.object({
 });
 
 router.get('/', auth, async (req, res) => {
-  const user = await User.findOne({ _id: req.user.sub });
-  res.send({ data: user });
+  const result = await knex('users')
+    .select('id', 'name', 'email', 'role')
+    .where('id', parseInt(req.user.sub, 10));
+
+  res.send({ data: result });
 });
 
 router.post('/', async (req, res) => {
@@ -22,17 +27,22 @@ router.post('/', async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  const user = await User.findOne({ email: value.email });
-  if (!user) {
-    throw new HttpError(401, 'Invalid email or password.');
+  const result = await knex('users').where('email', value.email).first();
+  if (!result) {
+    throw new HttpError(400, 'Invalid email or password');
   }
 
-  const isValidPassword = await user.comparePassword(value.password);
-  if (!isValidPassword) {
-    throw new HttpError(401, 'Invalid email or password.');
+  const same = await bcrypt.compare(value.password, result.password);
+  if (!same) {
+    throw new HttpError(400, 'Invalid email or password');
   }
 
-  const token = user.generateAuthToken();
+  const token = jwt.sign(
+    { name: result.name, role: result.role },
+    process.env.JWT_SECRET,
+    { subject: result.id.toString() }
+  );
+
   res.send({ data: token });
 });
 

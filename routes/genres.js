@@ -1,19 +1,20 @@
 const express = require('express');
 const Joi = require('joi');
-const admin = require('../middlewares/admin');
 const auth = require('../middlewares/auth');
-const Genre = require('../models/genre');
+const admin = require('../middlewares/admin');
 const HttpError = require('../utils/http-error');
+const knex = require('../utils/knex');
 
 const router = express.Router();
 
-const schema = Joi.object({
+const schema = {
   name: Joi.string().trim().required(),
-});
+};
 
 router.get('/', async (req, res) => {
-  const genres = await Genre.find().sort('name');
-  res.send({ data: genres });
+  const result = await knex('genres');
+
+  res.send({ data: result });
 });
 
 router.post('/', auth, async (req, res) => {
@@ -22,8 +23,9 @@ router.post('/', auth, async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  const genre = await Genre.create({ ...value });
-  res.send({ data: genre });
+  const result = await knex('res').insert(value).returning('*');
+
+  res.send({ data: result[0] });
 });
 
 router.put('/:id', auth, async (req, res) => {
@@ -32,34 +34,38 @@ router.put('/:id', auth, async (req, res) => {
     throw new HttpError(400, error.details[0].message);
   }
 
-  const genre = await Genre.findOneAndUpdate(
-    { _id: req.params.id },
-    { ...value },
-    { new: true }
-  );
-  if (!genre) {
-    throw new HttpError(404, 'The genre with the given ID was not found.');
+  const result = await knex('genres')
+    .update(value)
+    .where('id', parseInt(req.params.id, 10));
+  if (!result) {
+    throw new HttpError(404, 'Genre not found');
   }
 
-  res.send({ data: genre });
+  res.send({ data: result });
 });
 
 router.delete('/:id', auth, admin, async (req, res) => {
-  const genre = await Genre.findOneAndDelete({ _id: req.params.id });
-  if (!genre) {
-    throw new HttpError(404, 'The genre with the given ID was not found.');
+  const result = await knex('genres')
+    .where('id', parseInt(req.params.id, 10))
+    .del();
+  if (!result) {
+    throw new HttpError(404, 'Genre not found');
   }
 
-  res.send({ data: genre });
+  res.send({ data: result });
 });
 
 router.get('/:id', async (req, res) => {
-  const genre = await Genre.findOne({ _id: req.params.id });
+  const genre = await knex('genres')
+    .where('id', parseInt(req.params.id, 10))
+    .first();
   if (!genre) {
-    throw new HttpError(404, 'The genre with the given ID was not found.');
+    throw new HttpError(404, 'Genre not found');
   }
 
-  res.send({ data: genre });
+  const movies = await knex('movies').where('genre_id', genre.id);
+
+  res.send({ data: { ...genre, movies } });
 });
 
 module.exports = router;
