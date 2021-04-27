@@ -17,13 +17,11 @@ module.exports = function (req, res, next) {
 
   const parts = value.split(' ');
   if (parts.length !== 2 || !/^Bearer$/.test(parts[0])) {
-    throw new HttpError(400, 'Invalid authorization header format.');
+    throw new HttpError(400, 'Invalid authorization header format');
   }
 
-  /**
-   * @type {{iat: number; name: string; role: string; sub: string}}
-   */
   const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
   req.user = decoded;
+
   next();
 };
