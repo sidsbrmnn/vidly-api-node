@@ -9,7 +9,7 @@ const HttpError = require('../utils/http-error');
  */
 module.exports = function (req, res, next) {
   if (req.user.role !== 'admin') {
-    throw new HttpError(403, 'Access denied.');
+    throw new HttpError(403, "You're not authorized further");
   }
 
   next();
