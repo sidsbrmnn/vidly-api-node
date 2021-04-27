@@ -11,7 +11,7 @@ const HttpError = require('../utils/http-error');
  * @param {import('express').NextFunction} next
  */
 module.exports = function (err, req, res, next) {
-  if (!req.xhr) {
+  if (process.env.NODE_ENV === 'production' && !req.xhr) {
     return next(err);
   }
 
