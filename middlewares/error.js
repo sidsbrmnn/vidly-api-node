@@ -16,7 +16,7 @@ module.exports = function (err, req, res, next) {
   }
 
   if (err instanceof HttpError) {
-    res.status(err.statusCode).send({ message: err.message });
+    res.status(err.status).send({ message: err.message });
   } else if (err instanceof JsonWebTokenError) {
     res.status(401).send({ message: err.message });
   } else {
