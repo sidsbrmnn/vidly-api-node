@@ -47,6 +47,10 @@ app.use('/api/rentals', require('./routes/rentals'));
 app.use('/api/returns', require('./routes/returns'));
 app.use('/api/users', require('./routes/users'));
 
+app.all('*', (req, res) => {
+  res.sendStatus(405);
+});
+
 app.use(require('./middlewares/error'));
 
 console.log(`Starting in ${NODE_ENV} mode`);
