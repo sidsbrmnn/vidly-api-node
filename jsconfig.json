@@ -12,10 +12,5 @@
     "express.d.ts",
     "index.d.ts",
     "**/*.js"
-  ],
-  "typeAcquisition": {
-    "exclude": [
-      "dotenv"
-    ]
-  }
+  ]
 }
