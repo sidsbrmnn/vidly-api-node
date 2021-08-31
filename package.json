@@ -9,7 +9,7 @@
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
     "helmet": "^4.6.0",
-    "joi": "^17.4.0",
+    "joi": "^17.4.2",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.6",
     "moment": "^2.29.1",
@@ -18,14 +18,14 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
-    "eslint": "^7.29.0",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-prettier": "^3.4.0",
     "husky": "^6.0.0",
-    "jest": "^27.0.6",
+    "jest": "^27.1.0",
     "lint-staged": "^11.0.0",
-    "nodemon": "^2.0.9",
+    "nodemon": "^2.0.12",
     "prettier": "^2.3.2"
   },
   "scripts": {
