@@ -32,7 +32,7 @@
     "prepare": "husky install",
     "postinstall": "node scripts/post-install.js",
     "start": "node index.js",
-    "develop": "nodemon index.js",
+    "dev": "nodemon index.js",
     "knex": "knex",
     "lint": "eslint --fix --ignore-path .gitignore  --cache .",
     "test": "npm run lint"
