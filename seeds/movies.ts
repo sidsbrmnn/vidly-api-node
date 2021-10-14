@@ -1,3 +1,5 @@
+import type { Knex } from 'knex';
+
 const genres = [
   {
     name: 'Comedy',
@@ -33,11 +35,7 @@ const genres = [
   },
 ];
 
-/**
- *
- * @param {import('knex').Knex} knex
- */
-exports.seed = async function (knex) {
+exports.seed = async function (knex: Knex) {
   await knex('movies').truncate();
   await knex('genres').truncate();
 

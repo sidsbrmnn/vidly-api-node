@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 try {
   const exists = fs.existsSync(path.join(__dirname, '..', '.env'));

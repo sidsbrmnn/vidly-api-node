@@ -1,10 +1,7 @@
 class HttpError extends Error {
-  /**
-   *
-   * @param {number} status
-   * @param {string} message
-   */
-  constructor(status, message) {
+  status: number;
+
+  constructor(status: number, message: string) {
     super(message);
     this.status = status;
 
@@ -12,4 +9,4 @@ class HttpError extends Error {
   }
 }
 
-module.exports = HttpError;
+export default HttpError;

@@ -1,8 +1,6 @@
-/**
- *
- * @param {import('knex').Knex} knex
- */
-exports.up = function (knex) {
+import type { Knex } from 'knex';
+
+exports.up = function (knex: Knex) {
   return knex.schema.createTable('rentals', function (table) {
     table.increments('id');
     table
@@ -25,10 +23,6 @@ exports.up = function (knex) {
   });
 };
 
-/**
- *
- * @param {import('knex').Knex} knex
- */
-exports.down = function (knex) {
+exports.down = function (knex: Knex) {
   return knex.schema.dropTable('rentals');
 };

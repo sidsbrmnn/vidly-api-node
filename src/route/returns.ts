@@ -1,21 +1,18 @@
-const express = require('express');
-const Joi = require('joi');
-const moment = require('moment');
-const auth = require('../middlewares/auth');
-const HttpError = require('../utils/http-error');
-const knex = require('../utils/knex');
+import express from 'express';
+import moment from 'moment';
+import * as Yup from 'yup';
+import auth from '../middleware/jwt';
+import HttpError from '../util/http-error';
+import knex from '../util/knex';
 
 const router = express.Router();
 
-const schema = Joi.object({
-  rental_id: Joi.number().min(0).required(),
+const schema = Yup.object().shape({
+  rental_id: Yup.number().min(0).required(),
 });
 
 router.post('/', auth, async (req, res) => {
-  const { error, value } = schema.validate(req.body, { stripUnknown: true });
-  if (error) {
-    throw new HttpError(400, error.details[0].message);
-  }
+  const value = await schema.validate(req.body, { stripUnknown: true });
 
   const rental = await knex('rentals').where('id', value.rental_id).first();
   if (!rental) {
@@ -33,11 +30,11 @@ router.post('/', auth, async (req, res) => {
       .forUpdate()
       .where('id', rental.movie_id)
       .first();
-    value.fee = moment().diff(movie.created_at, 'days') * movie.rental_rate;
+    const fee = moment().diff(movie.created_at, 'days') * movie.rental_rate;
 
     const result = await knex('returns')
       .transacting(trx)
-      .insert(value)
+      .insert({ ...value, fee })
       .returning('*');
 
     await knex('movies')
@@ -49,4 +46,4 @@ router.post('/', auth, async (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
