@@ -2,13 +2,13 @@ import express from 'express';
 import jwtAuthz from 'express-jwt-authz';
 import * as Yup from 'yup';
 import { Rental } from '../entity/rental';
-import jwt from '../middleware/jwt';
+import jwtCheck from '../middleware/jwt-check';
 import HttpError from '../util/http-error';
 import knex from '../util/knex';
 
 const router = express.Router();
 
-router.use(jwt);
+router.use(jwtCheck);
 
 const schema = Yup.object().shape({
   customer_id: Yup.number().min(0).required(),

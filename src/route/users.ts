@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import express from 'express';
 import * as Yup from 'yup';
 import { User } from '../entity/user';
-import auth from '../middleware/jwt';
+import auth from '../middleware/jwt-check';
 import knex from '../util/knex';
 
 const router = express.Router();

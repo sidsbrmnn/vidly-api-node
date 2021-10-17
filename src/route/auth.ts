@@ -3,7 +3,7 @@ import express from 'express';
 import { UnauthorizedError } from 'express-jwt';
 import * as Yup from 'yup';
 import { User } from '../entity/user';
-import jwt from '../middleware/jwt';
+import jwtCheck from '../middleware/jwt-check';
 import HttpError from '../util/http-error';
 
 const router = express.Router();
@@ -13,7 +13,7 @@ const schema = Yup.object().shape({
   password: Yup.string().required(),
 });
 
-router.get('/', jwt, async (req, res) => {
+router.get('/', jwtCheck, async (req, res) => {
   const user = await User.findOne(parseInt(req.user!.sub, 10));
   if (!user) {
     throw new UnauthorizedError('revoked_token', { message: '' });
@@ -25,7 +25,7 @@ router.get('/', jwt, async (req, res) => {
 router.post('/', async (req, res) => {
   const value = await schema.validate(req.body, { stripUnknown: true });
 
-  let user = await User.findOne({ email: value.email });
+  const user = await User.findOne({ email: value.email });
   if (!user) {
     throw new HttpError(400, 'Invalid email or password');
   }

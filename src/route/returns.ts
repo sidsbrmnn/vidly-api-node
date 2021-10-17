@@ -1,7 +1,7 @@
 import express from 'express';
 import moment from 'moment';
 import * as Yup from 'yup';
-import auth from '../middleware/jwt';
+import auth from '../middleware/jwt-check';
 import HttpError from '../util/http-error';
 import knex from '../util/knex';
 
