@@ -1,4 +1,7 @@
-import type { Knex } from 'knex';
+import { Connection } from 'typeorm';
+import { Factory, Seeder } from 'typeorm-seeding';
+import { Genre } from '../entity/genre';
+import { Movie } from '../entity/movie';
 
 const genres = [
   {
@@ -35,20 +38,21 @@ const genres = [
   },
 ];
 
-exports.seed = async function (knex: Knex) {
-  await knex('movies').truncate();
-  await knex('genres').truncate();
+class CreateMovies implements Seeder {
+  public async run(factory: Factory, connection: Connection): Promise<void> {
+    for (const genre of genres) {
+      const { identifiers } = await connection
+        .getRepository(Genre)
+        .insert({ name: genre.name });
 
-  for (const genre of genres) {
-    const genre_ids = await knex('genres')
-      .insert({ name: genre.name })
-      .returning('id');
-
-    const movies = genre.movies.map((movie) => ({
-      ...movie,
-      genre_id: genre_ids[0],
-    }));
-
-    await knex('movies').insert(movies);
+      await connection.getRepository(Movie).insert(
+        genre.movies.map((movie) => ({
+          ...movie,
+          genre: identifiers[0],
+        }))
+      );
+    }
   }
-};
+}
+
+export default CreateMovies;

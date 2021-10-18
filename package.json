@@ -49,9 +49,9 @@
   "scripts": {
     "prepare": "husky install",
     "postinstall": "ts-node scripts/post-install.ts",
-    "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts",
-    "knex": "knex",
+    "start": "ts-node ./src/index.ts",
+    "dev": "nodemon ./src/index.ts",
+    "seed": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
     "lint": "eslint --fix --ignore-path .gitignore  --cache .",
     "test": "npm run lint"
   },
